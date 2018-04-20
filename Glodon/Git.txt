@@ -1,0 +1,115 @@
+	git config --global alias.ci "commit -s"			增加命令别名
+	git clone --bare --mirror  <repository> <directory.git>		实现版本库克隆，不使用--bare或者--mirror创建出来的克隆包含工作区,--mirror克隆出来的裸版本对上游版本库进行了注册，这样可以在裸版本库中使用git fetch命令和上游版本库进行持续同步。
+	git push/pull -f [<remote-repos> [<refspec>]]		远程推送/获取,其中方括号的含义是参数可以省略，<remote-repos>是远程版本库的地址或名称，<refspec>是引用表达式【本地分支:远程分支】，-f参数可以进行强制推送，即使是非快进式的推送也会成功执行。用户user2执行强制推送，会强制涮新服务器中的版本
+	git format-patch -s 索引..HEAD 						对本地提交产生补丁，从索引的位置到HEAD,使用了-s参数，会在导出的补丁文件中添加当前用户的签名。这个签名并非GnuPG式的数字签名，不过是将作者姓名添加到提交说明中而已，和在本书第2篇开头介绍的git commit -s命令的效果相同。
+	git am 补丁文件										在本地应用补丁文件
+	git rebase -i <commit-id>^  						重置本地提交
+	git add -p											对一个文件内的修改进行有选择性的添加
+	git diff –-word-diff 								进行逐字比较，删除内容[-...-]用红色表示，添加的内容{+...+}用绿色表示
+	git diff --cached 或者 --staged						查看提交暂存区（提交任务，stage）或版本库中文件的差异
+	git diff <commit1> <commit2> -- <paths>				差异比较中还可以使用路径参数，只显示不同版本间该路径下文件的差异
+	git commit --amend --allow-empty --reset-author
+		参数--amend是对刚刚的提交进行修补，这样就可以改正前面错误的提交（用户信息错误），而不会产生另外的新提交【实际上是执行了两条命令：git reset --soft HEAD^ 和 git commit -e -F .git/COMMIT_EDITMSG】
+		参数--allow-empty是因为要进行修补的提交实际上是一个空白提交，Git默认不允许空白提交
+		参数--reset-author的含义是将Author（提交者）的ID重置，否则只会影响最新的Commit（提交者）的ID。这条命令也会重置AuthorDate信息
+	git commit -s										中的参数-s含义为在提交说明的最后添加“Signed-off-by:”签名
+	git commit -a										对本地所有变更的文件执行提交操作，包括本地修改的文件，删除的文件，但不包括未被版本库跟踪的文件
+	git log --pretty=fuller	--pretty=raw				参数--pretty=fuller会同时显示作者和提交者，两者可以不同，参数--pretty=raw显示提交的原始数据。
+	git log --stat -m									附加的--stat参数看到每次提交的文件变更统计,-m参数可以查看合并操作所做出的修改
+	git log --pretty=oneline -p							使用精简输出来显示日志，参数-p可以在显示日志的时候同时显示改动
+	git log --oneline　--decorate						类似于--pretty=oneline，但是可以显示更短小的提交ID，参数--decorate可以在提交ID的旁边显示该提交关联的引用（里程碑或分支）
+	git shortlog										对 git log 的汇总输出，适合于产品发布说明
+	git status -s -b　--ignored							显示精简格式的状态输出，-b参数可以同时显示出当前工作分支的名称，使用了--ignored参数，才会在状态显示中看到被忽略的文件
+	git reset 索引										重置命令可以直接使用提交ID重置到任何一次提交，索引可以省略，默认是HEAD【例如：git reset --hard master@{2}】
+	git reset [-q] [<commit>] [--] <paths>...			（包含了路径<paths>的用法）不会重置引用，更不会改变工作区，而是用指定提交状态（<commit>）下的文件（<paths>）替换掉暂存区中的文件
+	git reset [--soft | --mixed | --hard | --merge | --keep] [-q] [<commit>]
+														（不使用路径<paths>的用法）则会重置引用。根据不同的选项，可以对暂存区或者工作区进行重置，reset重置的是索引的值，即master的内容；
+														1.替换引用的指向。引用指向新的提交ID。
+														2.替换暂存区。替换后，暂存区的内容和引用指向的目录树一致。
+														3.替换工作区。替换后，工作区的内容变得和暂存区一致，也和HEAD所指向的目录树内容相同。
+														--hard 会执行上述的1、2、3全部的三个动作
+														--soft 会执行上述中的操作1。即只更改引用的指向，不改变暂存区和工作区
+														--mixed或者不使用参数（缺省即为--mixed） 会执行上图中的操作1和操作2。即更改引用的指向以及重置暂存区，但是不改变工作区。
+	git checkout HEAD .									会用HEAD指向的master分支中的文件同时替换暂存区和以及工作区中的文件
+	git checkout [<branch>]								（不使用路径<paths>的用法）切换分支，会改变HEAD头指针。之所以后面的参数写作<branch>，是因为只有HEAD切换到一个分支才可以对提交进行跟踪，否则仍然会进入“分离头指针”的状态。在“分离头指针”状态下的提交不能被引用关联到而可能会丢失。所以用法二最主要的作用就是切换到分支。如果省略<branch>则相当于对工作区进行状态检查。
+	git checkout [-q] [<commit>] [--] <paths>...		（包含了路径<paths>的用法）不会改变HEAD头指针，主要是用于指定版本的文件覆盖工作区中对应的文件。如果省略<commit>，会拿暂存区的文件覆盖工作区的文件，否则用指定提交中的文件覆盖暂存区和工作区中对应的文件。
+	git checkout [-m] [[-b|--orphan] <new_branch>] [<start_point>]
+														主要是创建和切换到新的分支（<new_branch>），新的分支从<start_point>指定的提交开始创建。新分支和我们熟悉的master分支没有什么实质的不同，都是在refs/heads命名空间下的引用。
+	git checkout branch – filename						维持HEAD的指向不变。将branch所指向的提交中的filename替换暂存区和工作区中相应的文件。注意会将暂存区和工作区中的filename文件直接覆盖。
+	git stash											保存当前工作进度。会分别对暂存区和工作区的状态进行保存。
+	git stash [save [–patch] [-k|–[no-]keep-index] [-q|–quiet] [<message>]]
+														这条命令实际上是第一条git stash命令的完整版。即如果需要在保存工作进度的时候使用指定的说明，必须使用该格式；参数--patch会显示工作区和HEAD的差异，通过对差异文件的编辑决定在进度中最终要保存的工作区的内容，通过编辑差异文件可以在进度中排除无关内容。使用-k或者--keep-index参数，在保存进度后不会将暂存区重置。缺省会将暂存区和工作区强制重置
+	git stash list										显示进度列表。此命令显然暗示了git stash可以多次保存工作进度，并且在恢复的时候进行选择。
+	git stash pop [–index] [<stash>]					如果不使用任何参数，会恢复最新保存的工作进度，并将恢复的工作进度从存储的工作进度列表中清除。
+														如果提供<stash>参数（来自于git stash list显示的列表），则从该<stash>中恢复。恢复完毕也将从进度列表中删除<stash>。
+														选项--index除了恢复工作区的文件外，还尝试恢复暂存区。
+	git stash apply [–index] [<stash>]					除了不删除恢复的进度之外，其余和git stash pop命令一样
+	git stash drop [<stash>]							删除一个存储的进度。缺省删除最新的进度
+	git stash clear										删除所有存储的进度
+	git stash branch <branchname> <stash>				基于进度创建分支。
+	git describe										显示当前版本库的最新提交的版本号。显示的时候会选取离该提交最近的里程碑作为“基础版本号”，后面附加标识距离“基础版本”的数字以及该提交的SHA1哈希值缩写。如果提交本身没有包含里程碑，可以通过传递--always参数显示精简提交ID，否则出错。默认不使用轻量级里程碑生成版本描述字符串，使用--tags参数，才可以将轻量级里程碑用作版本描述符
+	git archive											可以对任意提交对应的目录树建立归档。如果使用tar格式建立归档，并且使用提交ID或里程碑ID，还会把提交ID记录在归档文件的文件头中。记录在文件头中的提交ID可以通过git tar-commit-id命令获取。可以通过为相应文件或目录建立export-ignore属性加以实现
+	git cherry											查找没有合并到上游的提交
+	git cherry-pick	索引								拣选指令，其含义是从众多的提交中挑选出一个提交应用在当前的工作分支中。该命令需要提供一个提交ID作为参数，操作过程相当于将该提交导出为补丁文件，然后在当前HEAD上重放形成无论内容还是提交说明都一致的提交。
+	git rebase  --onto  <newbase>  <since>  <till>		是对提交执行变基操作，即可以实现将指定范围的提交“嫁接”到另外一个提交之上。
+														变基操作的过程：
+															首先会执行git checkout切换到<till>。
+																因为会切换到<till>，因此如果<till>指向的不是一个分支（如master），则变基操作是在detached HEAD（分离头指针）状态进行的，当变基结束后，还要像在“时间旅行一”中那样，对master分支执行重置以实现把变基结果记录在分支中。
+															将<since>..<till>所标识的提交范围写到一个临时文件中。
+																还记得前面介绍的版本范围语法，<since>..<till>是指包括<till>的所有历史提交排除<since>以及<since>的历史提交后形成的版本范围。
+															当前分支强制重置（git reset –hard）到<newbase>。
+																相当于执行：git reset –hard <newbase>。
+															从保存在临时文件中的提交列表中，一个一个将提交按照顺序重新提交到重置之后的分支上。
+															如果遇到提交已经在分支中包含，跳过该提交。
+															如果在提交过程遇到冲突，变基过程暂停。用户解决冲突后，执行git rebase –continue继续变基操作。或者执行git rebase –skip跳过此提交。或者执行git rebase –abort就此终止变基操作切换到变基前的分支上。
+	git revert 索引										索引对应提交的反向提交
+	git gc												命令git gc就好比Git版本库的管家，会对版本库进行一系列的优化动作
+															对分散在.git/refs下的文件进行打包，打包到文件.git/packed-refs中。
+																如果没有将配置gc.packrefs关闭，就会执行命令：git pack-refs –all –prune实现对引用的打包。
+															丢弃90天前的reflog记录。
+																会运行使reflog过期命令：git reflog expire –all。因为采用了缺省参数调用，因此只会清空reflog中90天前的记录。
+															对松散对象进行打包。
+																运行git repack命令，凡是有引用关联的对象都被打在包里，未被关联的对象仍旧以松散对象形式保存。
+															清除未被关联的对象。缺省只清除2周以前的未被关联的对象。
+																可以向git gc提供--prune=<date>参数，其中的时间参数传递给git prune –expire <date>，实现对指定日期之前的未被关联的松散对象进行清理。
+															其他清理。
+																如运行git rerere gc对合并冲突的历史记录进行过期操作。
+	git merge [选项...--no-commit] <commit>...			将索引的提交《合并到当前分支》,合并操作的大多数情况，只须提供一个<commit>（提交ID或对应的引用：分支、里程碑等）作为参数。合并操作将<commit>对应的目录树和当前工作分支的目录树的内容进行合并，合并后的提交以当前分支的提交作为第一个父提交，以<commit>为第二个父提交。合并操作还支持将多个<commit>代表的分支和当前分支进行合并，过程类似。如果提供--no-commit选项，则合并后的结果会放入暂存区，用户可以对合并结果进行检查、更改，然后手动提交。
+	git tag												不带任何参数执行命令，即可显示当前版本库的里程碑列表，创建的里程碑，默认只在本地版本库中可见，不会因为对分支执行推送而将里程碑也推送到远程版本库。推送单个到服务器：git push origin 里程碑名，推送所有到服务器：git push origin refs/tags/*
+	git tag             <tagname> [<commit>]			创建轻量级里程碑，轻量级里程碑实际上指向的是一个提交，轻量级里程碑的创建过程没有记录，因此无法知道是谁创建的里程碑，是何时创建的里程碑。在团队协同开发时，尽量不要采用此种偷懒的方式创建里程碑
+	git tag -a          <tagname> [<commit>]			创建带说明的里程碑
+	git tag -m <msg>    <tagname> [<commit>]			创建带说明的里程碑，通过-m参数提供里程碑创建说明，当创建了带说明的里程碑mytag2后，会在版本库的.git/refs/tags目录下创建一个新的引用文件，“git cat-file -p 里程碑名"查看该提交的内容，会发现里程碑对象的内容是包含了创建里程碑时的说明，以及对应的提交ID等信息。查看对应的提交方法需要参考”索引方式“中提到的引用commit的方法进行查看
+	git tag -s          <tagname> [<commit>]			创建带GPG签名的里程碑
+	git tag -u <key-id> <tagname> [<commit>]			创建带GPG签名的里程碑，用-u参数选择指定的私钥进行签名，带签名的里程碑和带说明的里程碑本质上是一样的，都是在创建里程碑的时候在Git对象库中生成一个tag对象，只不过带签名的里程碑多做了一个工作：为里程碑对象添加GnuPG签名。创建带签名里程碑的一个前提是需要安装GnuPG，并且建立相应的公钥/私钥对。
+	git tag -d 里程碑名									删除里程碑。为什么没有提供重命名里程碑的命令呢？按理说只要将.git/refs/tags/下的引用文件改名就可以了。这是因为里程碑的名字不但反映在.git/refs/tags引用目录下的文件名，而且对于带说明或签名的里程碑，里程碑的名字还反映在tag对象的内容中。尤其是带签名的里程碑，如果修改里程碑的名字，不但里程碑对象ID势必要变化，而且里程碑也要重新进行签名，这显然难以自动实现。
+	git tag -f/--force 里程碑名							里程碑建立后，如果需要修改，可以使用同样的里程碑名称重新建立，不过需要加上-f或--force参数强制覆盖已有的里程碑。
+	git push <remote_url>  :<tagname>					删除远程版本库的里程碑，该命令的最后一个参数实际上是一个引用表达式，引用表达式一般的格式为<ref>:<ref>。该推送命令使用的引用表达式冒号前的引用被省略，其含义是将一个空值推送到远程版本库对应的引用中，亦即删除远程版本库中相关的引用。这个命令不但可以用于删除里程碑，还可以用它删除远程版本库中的分支。
+	git push <remote> <new_branch>						在远程版本库中创建分支
+	git branch <branchname> <start-point>				基于提交<start-point>创建新分支，新分支的分支名为<branchname>;创建分支并切换到新创建的分支：git checkout -b <new_branch> [<start_point>]
+	git branch -d/D <branchname>						删除分支,-d参数删除分支<branchname>时会检查所要删除的分支是否已经合并到其他分支中，否则拒绝删除。-D强制删除分支<branchname>，即使该分支没有合并到任何一个分支中。
+	git branch -m/M <oldbranch> <newbranch>				重命名分支,如果版本库中已经存在名为<newbranch>的分支，-m拒绝执行重命名，而-M会强制执行。
+	git remote											显示已经注册的远程版本库
+	git remote add 版本库名称 URL						添加远程版本库
+	git remote set-url 版本库名称 新URL					更改远程版本库的地址，手工修改.git/config文件是一种方法，用git config命令进行更改是第二种方法
+	git remote set-url --push 版本库名称 新URL			为推送操作设置单独的URL地址
+	git remote rename 老名字 新名字						更改远程版本库的名称
+	git remote update									当注册了多个远程版本库并希望获取所有远程版本库的更新时，Git提供的一个简单的命令，如果某个远程版本库不想在执行git remote update时获得更新，可以通过参数关闭自动更新。命令：git config remote.版本库名.skipDefaultUpdate true
+	git remote rm 版本库名称							删除注册的远程版本库
+	git submodule add 远程版本库 本地相对路径			添加子模组
+	git submodule status								查看子模组的状态
+	git submodule init									初始化子模组，实际上修改了.git/config文件，对子模组进行了注册。
+	git submodule update								克隆子模组的版本库，执行git submodule update更新出来的子模组，都以某个具体的提交版本进行检出。进入某个子模组目录，会发现其处于非跟踪状态（分离头指针状态）。
+	git blame -L n,m 文件名								会逐行显示文件，在每一行的行首显示此行最早是在什么版本引入的，由谁引入。只想查看某几行，使用-L n,m参数
+	git bisect start 开始索引 结束索引					开始二分查找
+	git bisect run sh shell脚本文件						运行一个自动化测试脚本，如果脚本的退出码是0，正在测试的版本是一个“好版本”，如果脚本的退出码是125，正在测试的版本被跳过，如果脚本的退出码是1到127（125除外），正在测试的版本是一个“坏版本
+	git bisect bad/good 索引							将索引标记为“坏提交”或“好提交”
+	git bisect log										查看二分查找的日志记录
+	git bisect replay 二分查找日志文件					通过日志文件恢复进度							
+	git checkout bisect/bad								切换到最终定位的坏提交用引用refs/bisect/bad标识
+	git bisect reset									当对“Bug”定位和修复后，撤销二分查找在版本库中遗留的临时文件和引用。撤销二分查找后，版本库切换回执行二分查找之前所在的分支。
+	git prune											从版本库中彻底删除没有被任何引用关联松散对象
+	git reflog show master | head -5					显示master分支索引最近5次的变更记录，git reflog的输出中还提供一个方便易记的表达式：<refname>@{<n>}。这个表达式的含义是引用<refname>之前第<n>次改变时的SHA1哈希值
+	git reflog expire --all								对版本库的reflog做过期操作，相当于将.git/logs/下的文件清空，但只会让90天前的数据过期
+	git reflog expire --expire=now --all				作用同上，--expire=<date>参数，强制<date>之前的记录全部过期，使用now作为时间参数，让 reflog 的全部记录都过期。
+	
+	http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000
